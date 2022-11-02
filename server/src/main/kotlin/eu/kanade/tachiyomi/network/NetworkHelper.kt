@@ -30,4 +30,6 @@ class NetworkHelper(context: Context) {
             .addInterceptor(CloudflareInterceptor())
             .build()
     }
+
+    val defaultUserAgent = "Mozilla/5.0 (Android 7.1.2; Mobile; rv:68.0) Gecko/68.0 Firefox/68.0"
 }
