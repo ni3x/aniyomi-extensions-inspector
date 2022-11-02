@@ -8,13 +8,13 @@ package suwayomi.tachidesk
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
-import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import suwayomi.tachidesk.manga.impl.extension.Extension
+import suwayomi.tachidesk.anime.impl.extension.AnimeExtension
 import suwayomi.tachidesk.server.applicationSetup
 import java.io.File
 import java.nio.file.Files
@@ -43,7 +43,7 @@ suspend fun main(args: Array<String>) {
 
     val extensionsInfo = extensions.associate {
         logger.debug("Installing $it")
-        val (pkgName, sources) = Extension.installAPK(tmpDir) { it.toFile() }
+        val (pkgName, sources) = AnimeExtension.installAPK(tmpDir) { it.toFile() }
         pkgName to sources.map { source -> SourceJson(source) }
     }
 
@@ -59,7 +59,7 @@ data class SourceJson(
     val versionId: Int,
     val hasCloudflare: Short
 ) {
-    constructor(source: HttpSource) :
+    constructor(source: AnimeHttpSource) :
         this(
             source.name,
             source.lang,
