@@ -20,6 +20,8 @@ interface SAnime : Serializable {
 
     var thumbnail_url: String?
 
+    var update_strategy: UpdateStrategy
+
     var initialized: Boolean
 
     fun copyFrom(other: SAnime) {
