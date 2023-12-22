@@ -12,21 +12,12 @@ allprojects {
     group = "suwayomi"
 
     version = "1.0"
-
-    repositories {
-        mavenCentral()
-        maven("https://maven.google.com/")
-        maven("https://jitpack.io")
-        maven("https://dl.google.com/dl/android/maven2/")
-        maven("https://repo1.maven.org/maven2/")
-        maven("https://oss.sonatype.org/content/repositories/snapshots/")
-    }
 }
 
 val projects = listOf(
-        project(":AndroidCompat"),
-        project(":AndroidCompat:Config"),
-        project(":server")
+    project(":AndroidCompat"),
+    project(":AndroidCompat:Config"),
+    project(":server")
 )
 
 configure(projects) {
