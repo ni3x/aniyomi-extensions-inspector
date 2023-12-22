@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          file: "server/build/*.jar"
+          file: "inspector/build/*.jar"
           tags: true
           draft: true
           verbose: true
