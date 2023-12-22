@@ -5,31 +5,38 @@ package eu.kanade.tachiyomi.network
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 
 import android.content.Context
-import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
+@Suppress("UNUSED_PARAMETER")
 class NetworkHelper(context: Context) {
 
     val cookieManager = MemoryCookieJar()
 
     val client by lazy {
-        val builder = OkHttpClient.Builder()
+        OkHttpClient.Builder()
             .cookieJar(cookieManager)
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(5, TimeUnit.MINUTES)
-            .writeTimeout(5, TimeUnit.MINUTES)
-        builder.build()
-    }
-
-    val cloudflareClient by lazy {
-        client.newBuilder()
-            .addInterceptor(CloudflareInterceptor())
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .callTimeout(2, TimeUnit.MINUTES)
             .build()
     }
 
-    val defaultUserAgent = "Mozilla/5.0 (Android 7.1.2; Mobile; rv:68.0) Gecko/68.0 Firefox/68.0"
+    /*
+     * @deprecated Since extension-lib 15
+     */
+    @Deprecated("The regular client handles Cloudflare by default")
+    @Suppress("UNUSED")
+    val cloudflareClient: OkHttpClient = client
+
+    private val defaultUserAgent by lazy {
+        System.getProperty("http.agent").orEmpty()
+    }
+
+    fun defaultUserAgentProvider() = defaultUserAgent
 }

@@ -29,9 +29,9 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
 
     val parentMetadata = parent.metaData
     val columnCount = parentMetadata.columnCount
-    val columnLabels = (1 .. columnCount).map {
-        parentMetadata.getColumnLabel(it)
-    }.toTypedArray()
+    val columnLabels = (1..columnCount)
+        .map(parentMetadata::getColumnLabel)
+        .toTypedArray()
 
     init {
         val columnCount = columnCount
@@ -41,10 +41,10 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
         // How can we optimize this?
         // We need to fill the cache as the set is loaded
 
-        //Fill cache
-        while(parent.next()) {
+        // Fill cache
+        while (parent.next()) {
             cachedContent += ResultSetEntry().apply {
-                for(i in 1 .. columnCount)
+                for (i in 1..columnCount)
                     data += parent.getObject(i)
             }
             resultSetLength++
@@ -60,9 +60,13 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     private fun internalMove(row: Int) {
-        if(cursor < 0) cursor = 0
-        else if(cursor > resultSetLength + 1) cursor = resultSetLength + 1
-        else cursor = row
+        if (cursor < 0) {
+            cursor = 0
+        } else if (cursor > resultSetLength + 1) {
+            cursor = resultSetLength + 1
+        } else {
+            cursor = row
+        }
     }
 
     private fun obj(column: Int): Any? {
@@ -75,10 +79,11 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
         return obj(cachedFindColumn(column))
     }
 
-    private fun cachedFindColumn(column: String?)
-            = columnCache.getOrPut(column!!, {
-        findColumn(column)
-    })
+    @Suppress("UnsafeCallOnNullableType")
+    private fun cachedFindColumn(column: String?) =
+        columnCache.getOrPut(column!!, {
+            findColumn(column)
+        })
 
     override fun getNClob(columnIndex: Int): NClob {
         return obj(columnIndex) as NClob
@@ -157,27 +162,27 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getDate(columnIndex: Int): Date {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getDate(columnLabel: String?): Date {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getDate(columnIndex: Int, cal: Calendar?): Date {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getDate(columnLabel: String?, cal: Calendar?): Date {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun beforeFirst() {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -201,13 +206,15 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
         return cursor - 1 < resultSetLength
     }
 
+    @Deprecated("Deprecated in java")
     override fun getBigDecimal(columnIndex: Int, scale: Int): BigDecimal {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
+    @Deprecated("Deprecated in java")
     override fun getBigDecimal(columnLabel: String?, scale: Int): BigDecimal {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -236,22 +243,22 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getTime(columnIndex: Int): Time {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getTime(columnLabel: String?): Time {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getTime(columnIndex: Int, cal: Calendar?): Time {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getTime(columnLabel: String?, cal: Calendar?): Time {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -272,31 +279,32 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun absolute(row: Int): Boolean {
-        if(row > 0) {
+        if (row > 0) {
             internalMove(row)
         } else {
             last()
-            for(i in 1 .. row)
+            for (i in 1..row)
                 previous()
         }
         return cursorValid()
     }
 
     override fun getSQLXML(columnIndex: Int): SQLXML? {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getSQLXML(columnLabel: String?): SQLXML? {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun <T : Any?> unwrap(iface: Class<T>?): T {
-        if(thisIsWrapperFor(iface))
+        if (thisIsWrapperFor(iface)) {
             return this as T
-        else
+        } else {
             return parent.unwrap(iface)
+        }
     }
 
     override fun next(): Boolean {
@@ -426,12 +434,12 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getBlob(columnIndex: Int): Blob {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getBlob(columnLabel: String?): Blob {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -500,12 +508,12 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getObject(columnIndex: Int, map: MutableMap<String, Class<*>>?): Any {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getObject(columnLabel: String?, map: MutableMap<String, Class<*>>?): Any {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -531,10 +539,15 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     private fun castToLong(obj: Any?): Long {
-        if(obj == null) return 0
-        else if(obj is Long) return obj
-        else if(obj is Number) return obj.toLong()
-        else throw IllegalStateException("Object is not a long!")
+        if (obj == null) {
+            return 0
+        } else if (obj is Long) {
+            return obj
+        } else if (obj is Number) {
+            return obj.toLong()
+        } else {
+            throw IllegalStateException("Object is not a long!")
+        }
     }
 
     override fun getLong(columnIndex: Int): Long {
@@ -546,12 +559,12 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getClob(columnIndex: Int): Clob {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getClob(columnLabel: String?): Clob {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -604,12 +617,12 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getArray(columnIndex: Int): Array {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getArray(columnLabel: String?): Array {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -688,32 +701,32 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getTimestamp(columnIndex: Int): Timestamp {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getTimestamp(columnLabel: String?): Timestamp {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getTimestamp(columnIndex: Int, cal: Calendar?): Timestamp {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getTimestamp(columnLabel: String?, cal: Calendar?): Timestamp {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getRef(columnIndex: Int): Ref {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getRef(columnLabel: String?): Ref {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
@@ -759,10 +772,12 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
         return obj(columnLabel) as Double
     }
 
+    @Deprecated("Deprecated in java")
     override fun getUnicodeStream(columnIndex: Int): InputStream {
         return getBinaryStream(columnIndex)
     }
 
+    @Deprecated("Deprecated in java")
     override fun getUnicodeStream(columnLabel: String?): InputStream {
         return getBinaryStream(columnLabel)
     }
@@ -792,12 +807,12 @@ class ScrollableResultSet(val parent: ResultSet) : ResultSet by parent {
     }
 
     override fun getRowId(columnIndex: Int): RowId {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 
     override fun getRowId(columnLabel: String?): RowId {
-        //TODO Maybe?
+        // TODO Maybe?
         notImplemented()
     }
 

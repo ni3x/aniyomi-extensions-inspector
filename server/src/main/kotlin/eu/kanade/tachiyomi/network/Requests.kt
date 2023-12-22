@@ -1,3 +1,5 @@
+@file:Suppress("FunctionNaming")
+
 package eu.kanade.tachiyomi.network
 
 import okhttp3.CacheControl
@@ -15,7 +17,7 @@ private val DEFAULT_BODY: RequestBody = FormBody.Builder().build()
 fun GET(
     url: String,
     headers: Headers = DEFAULT_HEADERS,
-    cache: CacheControl = DEFAULT_CACHE_CONTROL
+    cache: CacheControl = DEFAULT_CACHE_CONTROL,
 ): Request {
     return Request.Builder()
         .url(url)
@@ -25,7 +27,7 @@ fun GET(
 }
 
 /**
- * @since extensions-lib 1.4
+ * @since extensions-lib 14
  */
 fun GET(
     url: HttpUrl,
@@ -38,11 +40,12 @@ fun GET(
         .cacheControl(cache)
         .build()
 }
+
 fun POST(
     url: String,
     headers: Headers = DEFAULT_HEADERS,
     body: RequestBody = DEFAULT_BODY,
-    cache: CacheControl = DEFAULT_CACHE_CONTROL
+    cache: CacheControl = DEFAULT_CACHE_CONTROL,
 ): Request {
     return Request.Builder()
         .url(url)

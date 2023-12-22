@@ -6,39 +6,24 @@ import java.io.BufferedReader
 
 plugins {
     application
-    kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("org.jmailen.kotlinter")
-    id("com.github.johnrengelman.shadow")
-    id("com.github.gmazzo.buildconfig")
+    alias(libs.plugins.buildconfig)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlinter)
+    alias(libs.plugins.shadow)
 }
 
 dependencies {
-    // okhttp
-    val okhttpVersion = "5.0.0-alpha.11" // version is locked by Aniyomi extensions
-    implementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
-    implementation("com.squareup.okhttp3:logging-interceptor:$okhttpVersion")
-    implementation("com.squareup.okhttp3:okhttp-dnsoverhttps:$okhttpVersion")
-    implementation("com.squareup.okio:okio:3.3.0")
-
-
-    // dependencies of Aniyomi extensions, some are duplicate, keeping it here for reference
-    implementation("com.github.inorichi.injekt:injekt-core:65b0440")
-    implementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
-    implementation("io.reactivex:rxjava:1.3.8")
-    implementation("org.jsoup:jsoup:1.15.3")
-    implementation("app.cash.quickjs:quickjs-jvm:0.9.2")
-
+    // Dependencies of Aniyomi, some are duplicate from root build.gradle.kts
+    // keeping it here for reference
+    implementation(libs.injekt.core)
+    implementation(libs.jsoup)
+    implementation(libs.rxjava)
+    implementation(libs.bundles.okhttp)
 
     // AndroidCompat
     implementation(project(":AndroidCompat"))
     implementation(project(":AndroidCompat:Config"))
-
-    // uncomment to test extensions directly
-//    implementation(fileTree("lib/"))
-
-    // Testing
-    testImplementation(kotlin("test-junit5"))
 }
 
 val MainClass = "suwayomi.tachidesk.MainKt"
@@ -87,15 +72,19 @@ buildConfig {
 
 tasks {
     shadowJar {
+        dependencies {
+            // Useless icu-related files
+            exclude("com/ibm/icu/impl/data/icudt*/*/*")
+        }
         manifest {
             attributes(
                 mapOf(
-                        "Main-Class" to MainClass,
-                        "Implementation-Title" to rootProject.name,
-                        "Implementation-Vendor" to "The Tachiyomi Open Source Project",
-                        "Specification-Version" to inspectorVersion,
-                        "Implementation-Version" to inspectorRevision
-                )
+                    "Main-Class" to MainClass,
+                    "Implementation-Title" to rootProject.name,
+                    "Implementation-Vendor" to "The Tachiyomi Open Source Project",
+                    "Specification-Version" to inspectorVersion,
+                    "Implementation-Version" to inspectorRevision,
+                ),
             )
         }
         archiveBaseName.set(rootProject.name)
@@ -106,16 +95,13 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions {
             freeCompilerArgs = listOf(
-                    "-Xopt-in=kotlin.RequiresOptIn",
-                    "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                    "-Xopt-in=kotlinx.coroutines.InternalCoroutinesApi",
-                    "-Xopt-in=kotlin.io.path.ExperimentalPathApi",
+                "-opt-in=kotlin.RequiresOptIn",
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-opt-in=kotlinx.coroutines.InternalCoroutinesApi",
+                "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                "-opt-in=kotlin.io.path.ExperimentalPathApi",
             )
         }
-    }
-
-    test {
-        useJUnit()
     }
 
     withType<ShadowJar> {
@@ -128,14 +114,16 @@ tasks {
     }
 
     withType<LintTask> {
+        exclude("**/BuildConfig.kt")
         source(files("src/kotlin"))
     }
 
     withType<FormatTask> {
+        exclude("**/BuildConfig.kt")
         source(files("src/kotlin"))
     }
 
     withType<ProcessResources> {
-        duplicatesStrategy = DuplicatesStrategy.WARN
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 }

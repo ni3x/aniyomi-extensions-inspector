@@ -9,11 +9,10 @@ package suwayomi.tachidesk
  */
 
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
-import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import mu.KotlinLogging
 import suwayomi.tachidesk.anime.impl.extension.AnimeExtension
 import suwayomi.tachidesk.server.applicationSetup
 import java.io.File
@@ -33,18 +32,18 @@ suspend fun main(args: Array<String>) {
 
     val (apksPath, outputPath, tmpDirPath) = args
 
-    val tmpDir = File(tmpDirPath, "tmp").also { it.mkdir() }
+    val tmpDir = File(tmpDirPath, "tmp").also(File::mkdir)
     val extensions = Files.find(Paths.get(apksPath), 2, { _, fileAttributes -> fileAttributes.isRegularFile })
         .asSequence()
         .filter { it.extension == "apk" }
         .toList()
 
-    logger.info("Found ${extensions.size} extensions")
+    logger.info { "Found ${extensions.size} extensions" }
 
     val extensionsInfo = extensions.associate {
-        logger.debug("Installing $it")
+        logger.debug { "Installing $it" }
         val (pkgName, sources) = AnimeExtension.installAPK(tmpDir) { it.toFile() }
-        pkgName to sources.map { source -> SourceJson(source) }
+        pkgName to sources.map(::SourceJson)
     }
 
     File(outputPath).writeText(Json.encodeToString(extensionsInfo))
@@ -57,7 +56,6 @@ data class SourceJson(
     val id: String,
     val baseUrl: String,
     val versionId: Int,
-    val hasCloudflare: Short
 ) {
     constructor(source: AnimeHttpSource) :
         this(
@@ -66,10 +64,5 @@ data class SourceJson(
             source.id.toString(),
             source.baseUrl,
             source.versionId,
-            source.client.interceptors
-                .any { it is CloudflareInterceptor }
-                .toShort()
         )
 }
-
-private fun Boolean.toShort(): Short = if (this) 1 else 0

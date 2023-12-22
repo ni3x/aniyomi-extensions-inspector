@@ -42,13 +42,12 @@ class PackageController {
 
             val installed = InstalledPackage(root)
             apk.copyTo(installed.apk)
-            installed.writeIcon()
             installed.writeJar()
 
             if (!installed.jar.exists()) {
                 throw IllegalStateException("Failed to translate APK dex!")
             }
-        } catch(t: Throwable) {
+        } catch (t: Throwable) {
             root.deleteRecursively()
             throw t
         }
@@ -57,13 +56,11 @@ class PackageController {
     fun listInstalled(): List<InstalledPackage> {
         return androidFiles.packagesDir.listFiles().orEmpty().filter {
             it.isDirectory
-        }.map {
-            InstalledPackage(it)
-        }
+        }.map(::InstalledPackage)
     }
 
     fun deletePackage(pack: InstalledPackage) {
-        if(!pack.root.exists()) error("Package was never installed!")
+        if (!pack.root.exists()) error("Package was never installed!")
 
         val packageName = pack.info.packageName
         pack.root.deleteRecursively()
@@ -74,10 +71,11 @@ class PackageController {
 
     fun findPackage(packageName: String): InstalledPackage? {
         val file = File(androidFiles.packagesDir, packageName)
-        return if(file.exists())
+        return if (file.exists()) {
             InstalledPackage(file)
-        else
+        } else {
             null
+        }
     }
 
     fun findJarFromApk(apkFile: File): File? {

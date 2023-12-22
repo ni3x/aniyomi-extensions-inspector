@@ -9,7 +9,7 @@ package suwayomi.tachidesk.server
  */
 
 import eu.kanade.tachiyomi.App
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.kodein.di.DI
 import org.kodein.di.conf.global
 import suwayomi.server.BuildConfig
@@ -22,7 +22,7 @@ private val logger = KotlinLogging.logger {}
 val androidCompat by lazy { AndroidCompat() }
 
 fun applicationSetup() {
-    logger.info("Running Inspector ${BuildConfig.VERSION} revision ${BuildConfig.REVISION}")
+    logger.info { "Running Inspector ${BuildConfig.VERSION} revision ${BuildConfig.REVISION}" }
 
     // Load config API
     DI.global.addImport(ConfigKodeinModule().create())

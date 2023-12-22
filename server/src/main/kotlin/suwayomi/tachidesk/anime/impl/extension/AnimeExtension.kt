@@ -10,7 +10,7 @@ package suwayomi.tachidesk.anime.impl.extension
 import eu.kanade.tachiyomi.animesource.AnimeSource
 import eu.kanade.tachiyomi.animesource.AnimeSourceFactory
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import suwayomi.tachidesk.anime.impl.util.PackageTools.EXTENSION_FEATURE
 import suwayomi.tachidesk.anime.impl.util.PackageTools.LIB_VERSION_MAX
 import suwayomi.tachidesk.anime.impl.util.PackageTools.LIB_VERSION_MIN
@@ -27,6 +27,7 @@ object AnimeExtension {
         val apkFile = fetcher()
 
         val jarFile = File(tmpDir, "${apkFile.nameWithoutExtension}.jar")
+            .also(File::deleteOnExit)
 
         val packageInfo = getPackageInfo(apkFile.absolutePath)
 
@@ -39,13 +40,13 @@ object AnimeExtension {
         if (libVersion < LIB_VERSION_MIN || libVersion > LIB_VERSION_MAX) {
             throw Exception(
                 "Lib version is $libVersion, while only versions " +
-                    "$LIB_VERSION_MIN to $LIB_VERSION_MAX are allowed"
+                    "$LIB_VERSION_MIN to $LIB_VERSION_MAX are allowed",
             )
         }
 
         val className = packageInfo.packageName + packageInfo.applicationInfo.metaData.getString(METADATA_SOURCE_CLASS)
 
-        logger.trace("Main class for extension is $className")
+        logger.trace { "Main class for extension is $className" }
 
         dex2jar(apkFile, jarFile)
 

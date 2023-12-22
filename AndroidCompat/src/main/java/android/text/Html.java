@@ -1,7 +1,7 @@
 package android.text;
 
-import android.graphics.drawable.Drawable;
 
+import android.graphics.drawable.Drawable;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;

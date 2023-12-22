@@ -7,6 +7,8 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 /**
  * Util for evaluating JavaScript in sources.
  */
+
+@Suppress("UNUSED_PARAMETER")
 class JavaScriptEngine(context: Context) {
 
     /**

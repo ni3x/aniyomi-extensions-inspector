@@ -19,16 +19,21 @@ import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
 
+@kotlinx.serialization.ExperimentalSerializationApi
 class AppModule(val app: Application) : InjektModule {
 
     override fun InjektRegistrar.registerInjectables() {
-
         addSingleton(app)
 
         addSingletonFactory { NetworkHelper(app) }
         addSingletonFactory { JavaScriptEngine(app) }
 
-        addSingletonFactory { Json { ignoreUnknownKeys = true } }
+        addSingletonFactory {
+            Json {
+                ignoreUnknownKeys = true
+                explicitNulls = false
+            }
+        }
 
         // Asynchronously init expensive components for a faster cold start
         rxAsync { get<NetworkHelper>() }

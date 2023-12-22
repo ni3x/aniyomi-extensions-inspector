@@ -5,15 +5,15 @@ package suwayomi.tachidesk.anime.impl.util
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 
 import android.content.pm.PackageInfo
-import android.content.pm.Signature
 import android.os.Bundle
 import com.googlecode.d2j.dex.Dex2jar
 import com.googlecode.d2j.reader.MultiDexFileReader
 import com.googlecode.dex2jar.tools.BaksmaliBaseDexExceptionHandler
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dongliu.apk.parser.ApkFile
 import net.dongliu.apk.parser.ApkParsers
 import org.w3c.dom.Element
@@ -24,7 +24,6 @@ import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import java.nio.file.Files
-import java.nio.file.Path
 import javax.xml.parsers.DocumentBuilderFactory
 
 object PackageTools {
@@ -55,10 +54,12 @@ object PackageTools {
             .printIR(false)
             .noCode(false)
             .skipExceptions(false)
+            .dontSanitizeNames(true)
             .to(jarFilePath)
+
         if (handler.hasException()) {
-            val errorFile: Path = jarFilePath.parent.resolve("${dexFile.nameWithoutExtension}-error.txt")
-            logger.error(
+            val errorFile = jarFilePath.parent.resolve("${dexFile.nameWithoutExtension}-error.txt")
+            logger.error {
                 """
                 Detail Error Information in File $errorFile
                 Please report this file to one of following link if possible (any one).
@@ -67,7 +68,7 @@ object PackageTools {
                 https://github.com/pxb1988/dex2jar/issues
                 dex2jar@googlegroups.com
                 """.trimIndent()
-            )
+            }
             handler.dump(errorFile, emptyArray<String>())
         }
     }
@@ -79,11 +80,9 @@ object PackageTools {
             val parsed = ApkFile(apk)
             val dbFactory = DocumentBuilderFactory.newInstance()
             val dBuilder = dbFactory.newDocumentBuilder()
-            val doc = parsed.manifestXml.byteInputStream().use {
-                dBuilder.parse(it)
-            }
+            val doc = parsed.manifestXml.byteInputStream().use(dBuilder::parse)
 
-            logger.trace(parsed.manifestXml)
+            logger.trace { parsed.manifestXml }
 
             applicationInfo.metaData = Bundle().apply {
                 val appTag = doc.getElementsByTagName("application").item(0)
@@ -91,31 +90,22 @@ object PackageTools {
                 appTag?.childNodes?.toList()
                     .orEmpty()
                     .asSequence()
-                    .filter {
-                        it.nodeType == Node.ELEMENT_NODE
-                    }.map {
-                        it as Element
-                    }.filter {
-                        it.tagName == "meta-data"
-                    }.forEach {
+                    .filter { it.nodeType == Node.ELEMENT_NODE }
+                    .map { it as Element }
+                    .filter { it.tagName == "meta-data" }
+                    .forEach {
                         putString(
                             it.attributes.getNamedItem("android:name").nodeValue,
-                            it.attributes.getNamedItem("android:value").nodeValue
+                            it.attributes.getNamedItem("android:value").nodeValue,
                         )
                     }
             }
-
-            signatures = (
-                parsed.apkSingers.flatMap { it.certificateMetas }
-                /*+ parsed.apkV2Singers.flatMap { it.certificateMetas }*/
-                ) // Blocked by: https://github.com/hsiafan/apk-parser/issues/72
-                .map { Signature(it.data) }.toTypedArray()
         }
     }
 
     /**
      * loads the extension main class called $className from the jar located at $jarPath
-     * It may return an instance of HttpSource or SourceFactory depending on the extension.
+     * It may return an instance of AnimeHttpSource or AnimeSourceFactory depending on the extension.
      */
     fun loadExtensionSources(jarPath: String, className: String): Any {
         val classLoader = URLClassLoader(arrayOf<URL>(URL("file:$jarPath")))
