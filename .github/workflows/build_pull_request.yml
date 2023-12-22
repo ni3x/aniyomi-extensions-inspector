@@ -27,10 +27,6 @@ jobs:
           java-version: 17
           distribution: zulu
 
-      - name: Generate android.jar
-        run: |
-          ./AndroidCompat/getAndroid.sh
-
       - name: Build project
         uses: gradle/gradle-build-action@v2
         with:
