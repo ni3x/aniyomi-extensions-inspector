@@ -1,4 +1,4 @@
-package suwayomi.tachidesk.anime.impl.util
+package inspector.util
 
 /*
  * Copyright (C) Contributors to the Suwayomi project

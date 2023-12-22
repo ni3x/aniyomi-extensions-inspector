@@ -88,7 +88,7 @@ function dedup() {
 
 popd
 dedup AndroidCompat/src/main/java
-dedup server/src/main/kotlin
+dedup inspector/src/main/kotlin
 
 echo "Copying Android.jar to library folder..."
 mv tmp/android.jar AndroidCompat/lib

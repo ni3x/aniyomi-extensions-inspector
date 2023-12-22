@@ -99,7 +99,7 @@ function Dedupe($path)
 }
 
 Dedupe "AndroidCompat/src/main/java"
-Dedupe "server/src/main/kotlin"
+Dedupe "inspector/src/main/kotlin"
 
 Write-Output "Copying Android.jar to library folder..."
 Move-Item -Force $android_jar "AndroidCompat/lib/android.jar"

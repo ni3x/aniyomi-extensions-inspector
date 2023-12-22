@@ -26,7 +26,7 @@ dependencies {
     implementation(project(":AndroidCompat:Config"))
 }
 
-val MainClass = "suwayomi.tachidesk.MainKt"
+val MainClass = "inspector.MainKt"
 application {
     mainClass.set(MainClass)
 }
@@ -61,7 +61,7 @@ val String.wrapped get() = """"$this""""
 
 buildConfig {
     className("BuildConfig")
-    packageName("suwayomi.server")
+    packageName("inspector")
 
     useKotlinOutput()
 
@@ -105,7 +105,7 @@ tasks {
     }
 
     withType<ShadowJar> {
-        destinationDirectory.set(File("$rootDir/server/build"))
+        destinationDirectory.set(File("$rootDir/inspector/build"))
         dependsOn("formatKotlin", "lintKotlin")
     }
 

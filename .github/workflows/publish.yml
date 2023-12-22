@@ -36,7 +36,7 @@ jobs:
       - name: Build project
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: :server:shadowJar
+          arguments: :inspector:shadowJar
 
       - name: Upload Release
         uses: xresloader/upload-to-github-release@v1

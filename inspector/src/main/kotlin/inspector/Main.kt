@@ -1,4 +1,4 @@
-package suwayomi.tachidesk
+package inspector
 
 /*
  * Copyright (C) Contributors to the Suwayomi project
@@ -8,13 +8,18 @@ package suwayomi.tachidesk
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+import eu.kanade.tachiyomi.App
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
+import inspector.util.AnimeExtension
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import suwayomi.tachidesk.anime.impl.extension.AnimeExtension
-import suwayomi.tachidesk.server.applicationSetup
+import org.kodein.di.DI
+import org.kodein.di.conf.global
+import xyz.nulldev.androidcompat.AndroidCompat
+import xyz.nulldev.androidcompat.AndroidCompatInitializer
+import xyz.nulldev.ts.config.ConfigKodeinModule
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -22,35 +27,48 @@ import kotlin.io.path.extension
 import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger {}
+private val androidCompat by lazy { AndroidCompat() }
 
 suspend fun main(args: Array<String>) {
     if (args.size < 3) {
         throw RuntimeException("Inspector must be given the path of apks directory, output json, and a tmp dir")
     }
 
-    applicationSetup()
-
     val (apksPath, outputPath, tmpDirPath) = args
 
+    initApplication()
+
     val tmpDir = File(tmpDirPath, "tmp").also(File::mkdir)
-    val extensions = Files.find(Paths.get(apksPath), 2, { _, fileAttributes -> fileAttributes.isRegularFile })
-        .asSequence()
-        .filter { it.extension == "apk" }
-        .toList()
+    val extensions =
+        Files.find(Paths.get(apksPath), 2, { _, fileAttributes -> fileAttributes.isRegularFile })
+            .asSequence()
+            .filter { it.extension == "apk" }
+            .toList()
 
     logger.info { "Found ${extensions.size} extensions" }
 
     val extensionsInfo = extensions.associate {
         logger.debug { "Installing $it" }
-        val (pkgName, sources) = AnimeExtension.installAPK(tmpDir) { it.toFile() }
+        val (pkgName, sources) = AnimeExtension.installApk(tmpDir) { it.toFile() }
         pkgName to sources.map(::SourceJson)
     }
 
     File(outputPath).writeText(Json.encodeToString(extensionsInfo))
 }
 
+private fun initApplication() {
+    logger.info { "Running Inspector ${BuildConfig.VERSION} revision ${BuildConfig.REVISION}" }
+
+    // Load config API
+    DI.global.addImport(ConfigKodeinModule().create())
+    // Load Android compatibility dependencies
+    AndroidCompatInitializer().init()
+    // start app
+    androidCompat.startApp(App())
+}
+
 @Serializable
-data class SourceJson(
+private data class SourceJson(
     val name: String,
     val lang: String,
     val id: String,
