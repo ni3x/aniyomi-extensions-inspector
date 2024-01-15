@@ -5,31 +5,31 @@ package xyz.nulldev.androidcompat.io.sharedprefs
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. 
+ */
 
 import android.content.SharedPreferences
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ExperimentalSettingsImplementation
-import com.russhwolf.settings.JvmPreferencesSettings
+import com.russhwolf.settings.PreferencesSettings
 import com.russhwolf.settings.serialization.decodeValue
+import com.russhwolf.settings.serialization.decodeValueOrNull
 import com.russhwolf.settings.serialization.encodeValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
 import java.util.prefs.PreferenceChangeListener
 import java.util.prefs.Preferences
 
 @OptIn(ExperimentalSettingsImplementation::class, ExperimentalSerializationApi::class, ExperimentalSettingsApi::class)
 class JavaSharedPreferences(key: String) : SharedPreferences {
-    private val javaPreferences = Preferences.userRoot().node("suwayomi/tachidesk/$key")
-    private val preferences = JvmPreferencesSettings(javaPreferences)
+    private val javaPreferences = Preferences.userRoot().node("inspector/$key")
+    private val preferences = PreferencesSettings(javaPreferences)
     private val listeners = mutableMapOf<SharedPreferences.OnSharedPreferenceChangeListener, PreferenceChangeListener>()
 
-    // TODO: 2021-05-29 Need to find a way to get this working with all pref types
     override fun getAll(): MutableMap<String, *> {
-        return preferences.keys.associateWith { preferences.getStringOrNull(it) }.toMutableMap()
+        return preferences.keys.associateWith(preferences::getStringOrNull).toMutableMap()
     }
 
     override fun getString(key: String, defValue: String?): String? {
@@ -40,13 +40,13 @@ class JavaSharedPreferences(key: String) : SharedPreferences {
         }
     }
 
-    override fun getStringSet(key: String, defValues: MutableSet<String>?): MutableSet<String>? {
+    override fun getStringSet(key: String, defValues: Set<String>?): Set<String>? {
         try {
             return if (defValues != null) {
-                preferences.decodeValue(SetSerializer(String.serializer()).nullable, key, defValues)
+                preferences.decodeValue(SetSerializer(String.serializer()), key, defValues)
             } else {
-                preferences.decodeValue(SetSerializer(String.serializer()).nullable, key, null)
-            }?.toMutableSet()
+                preferences.decodeValueOrNull(SetSerializer(String.serializer()), key)
+            }
         } catch (e: SerializationException) {
             throw ClassCastException("$key was not a StringSet")
         }
@@ -76,7 +76,7 @@ class JavaSharedPreferences(key: String) : SharedPreferences {
         return Editor(preferences)
     }
 
-    class Editor(private val preferences: JvmPreferencesSettings) : SharedPreferences.Editor {
+    class Editor(private val preferences: PreferencesSettings) : SharedPreferences.Editor {
         val itemsToAdd = mutableMapOf<String, Any>()
 
         override fun putString(key: String, value: String?): SharedPreferences.Editor {
@@ -90,7 +90,7 @@ class JavaSharedPreferences(key: String) : SharedPreferences {
 
         override fun putStringSet(
             key: String,
-            values: MutableSet<String>?
+            values: MutableSet<String>?,
         ): SharedPreferences.Editor {
             if (values != null) {
                 itemsToAdd[key] = values
@@ -122,11 +122,13 @@ class JavaSharedPreferences(key: String) : SharedPreferences {
 
         override fun remove(key: String): SharedPreferences.Editor {
             itemsToAdd.remove(key)
+            preferences.remove(key)
             return this
         }
 
         override fun clear(): SharedPreferences.Editor {
             itemsToAdd.clear()
+            preferences.clear()
             return this
         }
 
@@ -155,7 +157,9 @@ class JavaSharedPreferences(key: String) : SharedPreferences {
         }
     }
 
-    override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+    override fun registerOnSharedPreferenceChangeListener(
+        listener: SharedPreferences.OnSharedPreferenceChangeListener,
+    ) {
         val javaListener = PreferenceChangeListener {
             listener.onSharedPreferenceChanged(this, it.key)
         }
@@ -163,7 +167,9 @@ class JavaSharedPreferences(key: String) : SharedPreferences {
         javaPreferences.addPreferenceChangeListener(javaListener)
     }
 
-    override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+    override fun unregisterOnSharedPreferenceChangeListener(
+        listener: SharedPreferences.OnSharedPreferenceChangeListener,
+    ) {
         val registeredListener = listeners.remove(listener)
         if (registeredListener != null) {
             javaPreferences.removePreferenceChangeListener(registeredListener)

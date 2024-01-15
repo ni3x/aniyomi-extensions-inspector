@@ -35,6 +35,10 @@ curl "https://android.googlesource.com/platform/prebuilts/sdk/+/6cd31be5e4e25901
 # We need to remove any stub classes that we have implementations for
 echo "Patching JAR..."
 
+echo "Removing useless resources..."
+zip --delete android.jar res/*
+zip --delete android.jar resources.arsc
+
 echo "Removing org.json..."
 zip --delete android.jar org/json/*
 
@@ -84,7 +88,7 @@ function dedup() {
 
 popd
 dedup AndroidCompat/src/main/java
-dedup server/src/main/kotlin
+dedup inspector/src/main/kotlin
 
 echo "Copying Android.jar to library folder..."
 mv tmp/android.jar AndroidCompat/lib

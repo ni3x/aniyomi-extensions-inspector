@@ -5,10 +5,13 @@ package androidx.preference;
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. 
+ */
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Set;
 
 /**
  * A minimal implementation of androidx.preference.Preference
@@ -17,6 +20,7 @@ public class Preference {
     // reference: https://android.googlesource.com/platform/frameworks/support/+/996971f962fcd554339a7cb2859cef9ca89dbcb7/preference/preference/src/main/java/androidx/preference/Preference.java
     // Note: `Preference` doesn't actually hold or persist the value, `OnPreferenceChangeListener` is called and it's up to the extension to persist it.
 
+    @JsonIgnore
     protected Context context;
 
     private String key;
@@ -25,8 +29,10 @@ public class Preference {
     private Object defaultValue;
 
     /** Tachidesk specific API */
+    @JsonIgnore
     private SharedPreferences sharedPreferences;
 
+    @JsonIgnore
     public OnPreferenceChangeListener onChangeListener;
 
     public Preference(Context context) {
@@ -109,18 +115,22 @@ public class Preference {
     }
 
     /** Tachidesk specific API */
+    @SuppressWarnings("unchecked")
     public Object getCurrentValue() {
         switch (getDefaultValueType()) {
             case "String":
                 return sharedPreferences.getString(key, (String)defaultValue);
             case "Boolean":
                 return sharedPreferences.getBoolean(key, (Boolean)defaultValue);
+            case "Set<String>":
+                return sharedPreferences.getStringSet(key, (Set<String>)defaultValue);
             default:
                 throw new RuntimeException("Unsupported type");
         }
     }
 
     /** Tachidesk specific API */
+    @SuppressWarnings("unchecked")
     public void saveNewValue(Object value) {
         switch (getDefaultValueType()) {
             case "String":
@@ -128,6 +138,9 @@ public class Preference {
                 break;
             case "Boolean":
                 sharedPreferences.edit().putBoolean(key, (Boolean)value).apply();
+                break;
+            case "Set<String>":
+                sharedPreferences.edit().putStringSet(key, (Set<String>)value).apply();
                 break;
             default:
                 throw new RuntimeException("Unsupported type");

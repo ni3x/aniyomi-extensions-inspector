@@ -50,6 +50,10 @@ function Remove-Files-Zip($zipfile, $paths)
     $stream.Dispose()
 }
 
+Write-Output "Removing useless resources..."
+Remove-Files-Zip $android_jar 'res/*'
+Remove-Files-Zip $android_jar 'resources.arsc'
+
 Write-Output "Removing org.json..."
 Remove-Files-Zip $android_jar 'org/json/*'
 
@@ -95,7 +99,7 @@ function Dedupe($path)
 }
 
 Dedupe "AndroidCompat/src/main/java"
-Dedupe "server/src/main/kotlin"
+Dedupe "inspector/src/main/kotlin"
 
 Write-Output "Copying Android.jar to library folder..."
 Move-Item -Force $android_jar "AndroidCompat/lib/android.jar"
