@@ -12,6 +12,9 @@ import eu.kanade.tachiyomi.App
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import inspector.util.AnimeExtension
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -47,11 +50,15 @@ suspend fun main(args: Array<String>) {
 
     logger.info { "Found ${extensions.size} extensions" }
 
-    val extensionsInfo = extensions.associate {
-        logger.debug { "Installing $it" }
-        val (pkgName, sources) = AnimeExtension.installApk(tmpDir) { it.toFile() }
-        pkgName to sources.map(::SourceJson)
-    }
+    val extensionsInfo = coroutineScope {
+        extensions.map {
+            async {
+                logger.debug { "Installing $it" }
+                val (pkgName, sources) = AnimeExtension.installApk(tmpDir) { it.toFile() }
+                pkgName to sources.map(::SourceJson)
+            }
+        }.awaitAll()
+    }.toMap()
 
     File(outputPath).writeText(Json.encodeToString(extensionsInfo))
 }

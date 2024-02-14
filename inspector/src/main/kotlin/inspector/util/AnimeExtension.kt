@@ -57,7 +57,7 @@ object AnimeExtension {
         dex2jar(apkFile, jarFile)
 
         // collect sources from the extension
-        return packageInfo.packageName to when (val instance = loadExtensionSources(jarFile.absolutePath, className)) {
+        return packageInfo.packageName to when (val instance = loadExtensionSources(jarFile, className)) {
             is AnimeSource -> listOf(instance).filterIsInstance<AnimeHttpSource>()
             is AnimeSourceFactory -> instance.createSources().filterIsInstance<AnimeHttpSource>()
             else -> throw RuntimeException("Unknown source class type! ${instance.javaClass}")
