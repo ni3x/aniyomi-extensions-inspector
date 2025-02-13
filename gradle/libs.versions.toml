@@ -1,6 +1,6 @@
 [versions]
 coroutines_version = "1.7.3"
-dex2jar_version = "2.4.10"
+dex2jar_version = "v76"
 kotlin_version = "1.9.21"
 okhttp_version = "5.0.0-alpha.11"
 serialization_version = "1.6.2"
