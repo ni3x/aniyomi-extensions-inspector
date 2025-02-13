@@ -2,7 +2,7 @@
 
 This is a fork of [tachiyomi-extensions-inspector](https://github.com/tachiyomiorg/tachiyomi-extensions-inspector)(a headless fork of [Tachidesk](https://github.com/Suwayomi/Tachidesk)) that is used to inspect (i.e. extract some information from) [Aniyomi's extension APKs](http://github.com/aniyomiorg/aniyomi-extensions).
 
-## Credits
+## Credits 
 
 The `AndroidCompat` module was originally developed by [@null-dev](https://github.com/null-dev) for [TachiWeb-Server](https://github.com/Tachiweb/TachiWeb-server) and is licensed under `Apache License Version 2.0`.
 
